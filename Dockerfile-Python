@@ -1,0 +1,31 @@
+
+# Use an official Python runtime as a parent image
+FROM python:3.10
+
+# Set the working directory in the container
+WORKDIR /root/devbox-chatbot
+
+# Copy the current directory contents into the container at /root/devbox-chatbot
+COPY . .
+
+# If you have a requirements.txt file, uncomment the next line and delete the poetry install line
+# RUN pip install --no-cache-dir -r requirements.txt
+
+# Install Poetry
+RUN pip install poetry
+
+# Install project dependencies using Poetry
+# Note: The --no-root option is typically used to prevent Poetry from installing the project package.
+# Since this Dockerfile assumes you're running a script or a command within the project,
+# we omit --no-root to ensure the project package is installed.
+RUN poetry config virtualenvs.create false \
+    && poetry install
+
+# Make port available to the world outside this container
+ EXPOSE 8081
+
+# Define environment variable
+# ENV NAME Value
+
+# Run the command to start your application
+CMD ["bash", "-c", "make start"]

@@ -1,0 +1,27 @@
+# Step 1: Start with a Node base image
+FROM node:20
+
+# Step 2: Set the working directory
+WORKDIR /app
+
+# Step 3: Copy package.json and yarn.lock
+COPY package.json yarn.lock ./
+
+# Step 4: Install dependencies
+RUN yarn install
+
+# Step 5: Copy the rest of your project files
+COPY . .
+
+# Step 6: Build your Next.js project
+RUN yarn build
+
+# Step 7: Install PM2 globally
+RUN yarn global add pm2
+
+COPY ecosystem.config.js .
+
+EXPOSE 3000
+# Step 8: Start the application with PM2
+# Adjust "yarn start" with your specific start script if different
+CMD ["pm2-runtime", "ecosystem.config.js"]
