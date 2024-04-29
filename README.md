@@ -274,7 +274,7 @@ Here is the file name
 Copy content and add it to the file
 
 ```yml
-nname: Build Workflow
+name: Build Workflow
 
 on:
     push:
@@ -594,19 +594,25 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Python Docker build and push
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_IMAGE_TAG: latest
         run: |
           docker build -t python-backend .
-          docker tag python-backend DOCKERHUB_USERNAME/python-backend:latest
+          docker tag python-backend $DOCKERHUB_USERNAME/python-backend:$DOCKER_IMAGE_TAG
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push DOCKERHUB_USERNAME/python-backend:latest
+          docker push $DOCKERHUB_USERNAME/python-backend:$DOCKER_IMAGE_TAG
 
       - name: Next.js Docker build and push
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKER_IMAGE_TAG: latest
         run: |
           cd chatbot-ui
           docker build -t next-frontend .
-          docker tag next-frontend DOCKERHUB_USERNAME/next-frontend:latest
+          docker tag next-frontend $DOCKERHUB_USERNAME/next-frontend:$DOCKER_IMAGE_TAG
           docker login -u ${{ secrets.DOCKERHUB_USERNAME }} -p ${{ secrets.DOCKERHUB_TOKEN }}
-          docker push DOCKERHUB_USERNAME/next-frontend:latest
+          docker push $DOCKERHUB_USERNAME/next-frontend:$DOCKER_IMAGE_TAG
 ```
 It will trigger the workflow to run
 
@@ -635,23 +641,26 @@ jobs:
     build:
       name: Docker Image Scan
       runs-on: self-hosted
+      env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKER_IMAGE_TAG: latest
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v2
 
         - name: Pull the Python Docker image
-          run: docker pull DOCKERHUB_USERNAME/python-backend:latest
+          run: docker pull $DOCKERHUB_USERNAME/python-backend:$DOCKER_IMAGE_TAG
 
   
         - name: Trivy image scan Python
-          run: trivy image DOCKERHUB_USERNAME/python-backend:latest
+          run: trivy image $DOCKERHUB_USERNAME/python-backend:$DOCKER_IMAGE_TAG
 
         - name: Pull the Next Docker image
-          run: docker pull DOCKERHUB_USERNAME/next-frontend:latest
+          run: docker pull $DOCKERHUB_USERNAME/next-frontend:$DOCKER_IMAGE_TAG
 
   
         - name: Trivy image scan next
-          run: trivy image DOCKERHUB_USERNAME/next-frontend:latest
+          run: trivy image $DOCKERHUB_USERNAME/next-frontend:$DOCKER_IMAGE_TAG
 
 ```
 
@@ -671,10 +680,10 @@ Here is the output of the build.
             docker rm next-fronntend || true
   
       - name: Run the python container on AWS EC2 for testing
-        run: docker run -d --name python-backend -p 3000:3000 DOCKERHUB_USERNAME/python-backend:latest
+        run: docker run -d --name python-backend -p 3000:3000 $DOCKERHUB_USERNAME/python-backend:$DOCKER_IMAGE_TAG
 
       - name: Run the Next.js container on AWS EC2 for testing
-        run: docker run -d --name next-frontend -p 80:80 DOCKERHUB_USERNAME/next-frontend:latest
+        run: docker run -d --name next-frontend -p 80:80 $DOCKERHUB_USERNAME/next-frontend:$DOCKER_IMAGE_TAG
   
 
 ```
@@ -714,15 +723,19 @@ jobs:
     build:
       name: Docker Image Scan
       runs-on: self-hosted
+      env:
+      DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      DOCKER_IMAGE_TAG: latest
+
       steps:
         - name: Checkout Repository
           uses: actions/checkout@v2
 
         - name: Pull the Fronntend Docker image
-          run: docker pull DOCKERHUB_USERNAME/next-frontend:latest1:latest
+          run: docker pull $DOCKERHUB_USERNAME/next-frontend:latest1:$DOCKER_IMAGE_TAG
 
         - name: Pull the Backend Docker image
-          run: docker pull DOCKERHUB_USERNAME/python-backend:latest
+          run: docker pull $DOCKERHUB_USERNAME/python-backend:$DOCKER_IMAGE_TAG
   
         - name: Update kubeconfig
           run: aws eks --region us-west-2 update-kubeconfig --name EKS_cluster_capautomation
